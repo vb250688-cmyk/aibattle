@@ -1,31 +1,60 @@
-# 🤖 AIBattleTrader
+# 🎮 AI Battle Trader
 
-**AI vs User Trading Battle** — Real-time crypto trading competition on Sepolia Testnet
+**AI vs User crypto trading game** — Live Binance prices, Sepolia testnet points, daily leaderboard.
 
-## 🔗 Live App
-👉 **[Play Now](https://YOUR_USERNAME.github.io/aibattle)**
+---
 
-## ✨ Features
-- 📊 Real-time BTC, ETH, SOL, BNB price charts
-- 🤖 AI trader with smart entry/exit logic
-- 🏆 Win tracking with wallet-based permanent scores
-- 🔗 MetaMask + WalletConnect (Sepolia Testnet)
-- 🎆 Win/Loss animations
-- 💾 Permanent save via IndexedDB + Wallet signing
+## 📁 Folder Structure
 
-## 🚀 How to Play
-1. Open the live app link above
-2. Connect MetaMask wallet (Sepolia Testnet)
-3. Trade against the AI — buy long or sell short
-4. Close positions in profit to earn wins & points
-5. Your score is tied to your wallet address permanently
+```
+aibattle/
+├── index.html              ← HTML only — layout & DOM structure
+├── css/
+│   └── style.css           ← All styles, animations, design tokens
+├── js/
+│   ├── config.js           ← ⚙️  All constants (edit this to configure)
+│   └── app.js              ← Game logic, AI engine, chart, WebSocket
+├── contracts/
+│   └── AIBattleScore_v2.sol ← Sepolia smart contract (Solidity)
+└── README.md
+```
 
-## 🛠️ Tech Stack
-- Pure HTML/CSS/JS (no framework)
-- Binance WebSocket API (live prices)
-- MetaMask / WalletConnect v2
-- IndexedDB for local persistence
-- Sepolia Testnet for wallet identity
+---
 
-## 📱 Mobile
-Works best in MetaMask mobile browser or any Chromium browser.
+## ⚙️ Configuration (`js/config.js`)
+
+| Variable | Purpose |
+|---|---|
+| `SUPA_URL` / `SUPA_KEY` | Supabase project credentials |
+| `SUPA_TABLE` | Table name for leaderboard |
+| `GAME_CONFIG.startingCash` | Starting USD per side |
+| `GAME_CONFIG.resetHourIST` | Daily reset hour (IST) |
+| `COINS` | Add/remove tradeable coins here |
+| `NETWORK_CONFIG` | Switch between Sepolia / Mainnet |
+
+---
+
+## 🚀 Local Run
+
+```bash
+# Any static server works — open index.html directly OR:
+npx serve .
+# then visit http://localhost:3000
+```
+
+## 🌐 Deploy (Railway / Render / Vercel)
+
+Just upload the folder. No build step needed — pure HTML/CSS/JS.
+
+---
+
+## 📝 Update Guide
+
+| Want to change | Edit file |
+|---|---|
+| Colors, fonts, layout | `css/style.css` |
+| Game settings, coins | `js/config.js` |
+| AI logic, trading engine | `js/app.js` |
+| Page structure (HTML) | `index.html` |
+| Smart contract | `contracts/AIBattleScore_v2.sol` |
+
