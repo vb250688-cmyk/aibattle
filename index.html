@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Battle Trader – Premium Trading Arena</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap');
+
+/* ═════════════════════════════════════════════════════════════
+   DESIGN TOKENS — PREMIUM FINTECH + GAMING SYSTEM
+═════════════════════════════════════════════════════════════ */
+
+:root {
+  /* COLORS — Primary Palette (Gaming Intensity) */
+  --primary-cyan: #00d9ff;
+  --primary-green: #00f77a;
+  --primary-red: #ff3860;
+  --primary-amber: #ffad00;
+  --primary-purple: #a855f7;
+
+  /* Background Layers (Deep & Dark) */
+  --bg-0: #0a0e1a;
+  --bg-1: #0f1825;
+  --bg-2: #151d2e;
+  --bg-3: #1a2332;
+
+  /* Semantic Colors */
+  --success: #00f77a;
+  --danger: #ff3860;
+  --warning: #ffad00;
+  --info: #00d9ff;
+
+  /* Text & Borders */
+  --text-primary: #e8eef5;
+  --text-secondary: #8fa0b5;
+  --text-tertiary: #5a6a7d;
+  --border-subtle: rgba(255,255,255,0.04);
+  --border-normal: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.16);
+
+  /* Glass Surfaces */
+  --glass-light: rgba(15,24,37,0.7);
+  --glass-dark: rgba(10,14,26,0.9);
+
+  /* Rank Colors */
+  --rank-gold: #ffc857;
+  --rank-silver: #d0d0d0;
+  --rank-bronze: #d4845c;
+  --rank-legendary: #a855f7;
+  --streak-hot: #ff6b35;
+
+  /* Shadows & Glows (Gaming Enhanced) */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+  --shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+  --shadow-xl: 0 16px 32px rgba(0,0,0,0.25);
+  --glow-cyan: 0 0 20px rgba(0,217,255,0.4), 0 0 40px rgba(0,217,255,0.2);
+  --glow-green: 0 0 20px rgba(0,247,122,0.4), 0 0 40px rgba(0,247,122,0.2);
+  --glow-red: 0 0 20px rgba(255,56,96,0.4), 0 0 40px rgba(255,56,96,0.2);
+  --glow-purple: 0 0 20px rgba(168,85,247,0.4), 0 0 40px rgba(168,85,247,0.2);
+  --focus-glow: 0 0 0 2px rgba(0,217,255,0.5);
+
+  /* Borders & Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Spacing Grid (8px) */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+
+  /* Typography */
+  --font-primary: 'Inter', '-apple-system', 'BlinkMacSystemFont', sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-gaming: 'Orbitron', 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Font Sizes */
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ANIMATIONS & KEYFRAMES (Gaming Energy)
+═════════════════════════════════════════════════════════════ */
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: var(--glow-cyan); }
+  50% { box-shadow: var(--glow-cyan), inset 0 0 20px rgba(0,217,255,0.1); }
+}
+
+@keyframes pulse-battle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes battle-charge {
+  0% { width: 0%; }
+  100% { width: 52%; }
+}
+
+@keyframes glow-flicker {
+  0%, 18%, 22%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.7; }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RESET & BASE STYLES
+═════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-1);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Subtle perspective grid (optional) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,217,255,0.014) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,217,255,0.014) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Vignette fade at edges */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, transparent 40%, rgba(10,14,26,0.4) 100%);
+}
+
+body > * { position: relative; z-index: 1; }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-normal);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   HEADER — PREMIUM NAVIGATION BAR (Gaming Enhanced)
+═════════════════════════════════════════════════════════════ */
+
+#wallet-bar {
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-normal);
+  padding: var(--sp-sm) var(--sp-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+}
+
+.wl-net {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 1px;
+  color: var(--primary-cyan);
+  background: rgba(0,217,255,0.08);
+  border: 1px solid rgba(0,217,255,0.3);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-xs) var(--sp-sm);
+  box-shadow: inset 0 0 10px rgba(0,217,255,0.1);
+}
+
+.wl-addr {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--primary-green);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wl-addr:hover { 
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(0,247,122,0.3);
+}
+
+.btn-wallet {
+  padding: var(--sp-xs) var(--sp-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0,217,255,0.4);
+  background: rgba(0,217,255,0.1);
+  color: var(--primary-cyan);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 0 12px rgba(0,217,255,0.1);
+}
+
+.btn-wallet:hover {
+  background: var(--primary-cyan);
+  color: #000;
+  border-color: var(--primary-cyan);
+  box-shadow: var(--glow-cyan), inset 0 0 12px rgba(0,217,255,0.2);
+  transform: translateY(-2px);
+}
+
+.btn-wallet.connected {
+  background: rgba(0,247,122,0.12);
+  border-color: rgba(0,247,122,0.4);
+  color: var(--primary-green);
+  box-shadow: inset 0 0 12px rgba(0,247,122,0.1);
+}
+
+.btn-wallet.connected:hover {
+  background: var(--primary-green);
+  color: #000;
+  box-shadow: var(--glow-green), inset 0 0 12px rgba(0,247,122,0.2);
+}
+
+#hdr {
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-normal);
+  padding: var(--sp-md) var(--sp-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-lg);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+#hdr::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--primary-purple) 15%,
+    var(--primary-cyan) 50%,
+    var(--primary-green) 85%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+/* Logo */
+.logo {
+  font-family: var(--font-gaming);
+  font-size: var(--text-xl);
+  font-weight: 900;
+  color: var(--primary-cyan);
+  letter-spacing: 2px;
+  user-select: none;
+  text-shadow: 0 0 20px rgba(0,217,255,0.3);
+}
+
+.logo span { 
+  color: var(--primary-green);
+  text-shadow: 0 0 20px rgba(0,247,122,0.3);
+}
+
+/* Header Stats Row */
+.hdr-score {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Battle Status Card (Hero Header) */
+.battle-status-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  background: linear-gradient(
+    135deg,
+    rgba(0,217,255,0.1),
+    rgba(0,217,255,0.04)
+  );
+  border: 2px solid rgba(0,217,255,0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-md) var(--sp-lg);
+  flex: 1;
+  min-width: 300px;
+  position: relative;
+  overflow: hidden;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.battle-status-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,217,255,0.5), transparent);
+}
+
+.battle-score {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  position: relative;
+  z-index: 1;
+}
+
+.battle-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.battle-value {
+  font-family: var(--font-gaming);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--primary-cyan);
+  letter-spacing: -2px;
+  line-height: 1;
+  text-shadow: 0 0 15px rgba(0,217,255,0.4);
+}
+
+.battle-vs {
+  font-family: var(--font-gaming);
+  font-size: 18px;
+  color: var(--primary-purple);
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   MAIN LAYOUT
+═════════════════════════════════════════════════════════════ */
+
+#app {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--sp-lg);
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  gap: var(--sp-lg);
+  min-height: calc(100vh - 200px);
+}
+
+@media (max-width: 1200px) {
+  #app {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+.card {
+  background: linear-gradient(135deg, rgba(21,29,46,0.8), rgba(15,24,37,0.8));
+  border: 1px solid var(--border-normal);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(0,217,255,0.2);
+  background: linear-gradient(135deg, rgba(21,29,46,0.9), rgba(15,24,37,0.9));
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--sp-sm);
+  letter-spacing: 0.5px;
+}
+
+.card-sub {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   BATTLE HERO SECTION (Gaming Energy!)
+═════════════════════════════════════════════════════════════ */
+
+#battle-section {
+  grid-column: 1 / -1;
+  background: linear-gradient(
+    180deg,
+    rgba(0,217,255,0.08),
+    rgba(168,85,247,0.05)
+  );
+  border: 2px solid rgba(0,217,255,0.2);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+#battle-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,217,255,0.08) 0%, transparent 70%);
+  animation: pulse-battle 4s ease-in-out infinite;
+}
+
+.battle-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--sp-lg);
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.fighter-panel {
+  background: linear-gradient(135deg, rgba(10,14,26,0.9), rgba(15,24,37,0.85));
+  border: 2px solid var(--border-normal);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.fighter-panel.ai {
+  border-color: rgba(168,85,247,0.3);
+  background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(15,24,37,0.85));
+}
+
+.fighter-panel.user {
+  border-color: rgba(0,247,122,0.3);
+  background: linear-gradient(135deg, rgba(0,247,122,0.08), rgba(15,24,37,0.85));
+}
+
+.fighter-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-sm);
+}
+
+.fighter-value {
+  font-family: var(--font-gaming);
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+  margin-bottom: var(--sp-sm);
+}
+
+.fighter-panel.ai .fighter-value {
+  color: var(--primary-purple);
+  text-shadow: 0 0 20px rgba(168,85,247,0.4);
+}
+
+.fighter-panel.user .fighter-value {
+  color: var(--primary-green);
+  text-shadow: 0 0 20px rgba(0,247,122,0.4);
+}
+
+.fighter-meta {
+  display: flex;
+  justify-content: space-around;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  padding-top: var(--sp-md);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.vs-badge {
+  width: 80px;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(0,217,255,0.15), rgba(168,85,247,0.15));
+  border: 2px solid rgba(0,217,255,0.4);
+  border-radius: 50%;
+  font-family: var(--font-gaming);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--primary-cyan);
+  box-shadow: var(--glow-cyan), inset 0 0 20px rgba(0,217,255,0.1);
+  animation: pulse-glow 2s ease-in-out infinite;
+  text-shadow: 0 0 15px rgba(0,217,255,0.5);
+}
+
+.battle-progress {
+  grid-column: 1 / -1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+  position: relative;
+  margin-top: var(--sp-md);
+}
+
+.battle-progress-fill {
+  height: 100%;
+  width: 52%;
+  background: linear-gradient(90deg, var(--primary-red), var(--primary-cyan), var(--primary-green));
+  border-radius: inherit;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,217,255,0.5), inset 0 0 10px rgba(255,255,255,0.2);
+  animation: battle-charge 2s ease-out;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   CHART SECTION (Gaming Dark Theme)
+═════════════════════════════════════════════════════════════ */
+
+#chart-section {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-controls {
+  display: flex;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-md);
+  flex-wrap: wrap;
+}
+
+.coin-tab, .tf-btn {
+  padding: var(--sp-xs) var(--sp-md);
+  border: 1px solid var(--border-normal);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+
+.coin-tab:hover, .tf-btn:hover {
+  border-color: rgba(0,217,255,0.3);
+  color: var(--text-primary);
+}
+
+.coin-tab.active, .tf-btn.active {
+  background: rgba(0,217,255,0.15);
+  border-color: var(--primary-cyan);
+  color: var(--primary-cyan);
+  box-shadow: inset 0 0 10px rgba(0,217,255,0.1);
+}
+
+.chart-container {
+  flex: 1;
+  background: linear-gradient(180deg, rgba(10,14,26,0.95), rgba(5,9,18,0.98));
+  border: 1px solid var(--border-normal);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+#chart {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-info {
+  position: absolute;
+  top: var(--sp-lg);
+  left: var(--sp-lg);
+  font-family: var(--font-gaming);
+  z-index: 2;
+}
+
+.chart-coin {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-xs);
+}
+
+.chart-price {
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--primary-cyan);
+  letter-spacing: -1px;
+  text-shadow: 0 0 15px rgba(0,217,255,0.4);
+}
+
+.chart-change {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--primary-green);
+  margin-top: var(--sp-xs);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SIDEBAR SECTIONS
+═════════════════════════════════════════════════════════════ */
+
+#ai-panel, #user-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.ai-header, .user-header {
+  text-align: center;
+  padding: var(--sp-md);
+  background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(0,217,255,0.05));
+  border: 1px solid rgba(0,217,255,0.2);
+  border-radius: var(--radius-lg);
+}
+
+.ai-status-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-xs);
+}
+
+.ai-cash, .user-cash {
+  font-family: var(--font-gaming);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: var(--sp-xs);
+}
+
+.ai-cash {
+  color: var(--primary-purple);
+  text-shadow: 0 0 15px rgba(168,85,247,0.3);
+}
+
+.user-cash {
+  color: var(--primary-green);
+  text-shadow: 0 0 15px rgba(0,247,122,0.3);
+}
+
+.ai-pnl, .user-pnl {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+}
+
+.ai-pnl.positive, .user-pnl.positive {
+  color: var(--primary-green);
+}
+
+.ai-pnl.negative, .user-pnl.negative {
+  color: var(--primary-red);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   TRADING PANEL
+═════════════════════════════════════════════════════════════ */
+
+.trading-tabs {
+  display: flex;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+}
+
+.trading-tab {
+  flex: 1;
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--border-normal);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font-gaming);
+  font-size: var(--text-sm);
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trading-tab:hover {
+  border-color: rgba(0,217,255,0.3);
+  color: var(--text-primary);
+}
+
+.trading-tab.active.buy {
+  background: rgba(0,247,122,0.15);
+  border-color: rgba(0,247,122,0.4);
+  color: var(--primary-green);
+  box-shadow: inset 0 0 10px rgba(0,247,122,0.1);
+}
+
+.trading-tab.active.sell {
+  background: rgba(255,56,96,0.15);
+  border-color: rgba(255,56,96,0.4);
+  color: var(--primary-red);
+  box-shadow: inset 0 0 10px rgba(255,56,96,0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  margin-bottom: var(--sp-md);
+}
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-field {
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--border-normal);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: rgba(0,217,255,0.4);
+  background: rgba(0,217,255,0.05);
+  box-shadow: inset 0 0 10px rgba(0,217,255,0.05);
+}
+
+.size-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+}
+
+.size-btn {
+  padding: var(--sp-sm) var(--sp-xs);
+  border: 1px solid var(--border-normal);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.size-btn:hover {
+  border-color: rgba(0,217,255,0.3);
+  color: var(--text-primary);
+}
+
+.size-btn.active {
+  background: rgba(0,217,255,0.15);
+  border-color: rgba(0,217,255,0.4);
+  color: var(--primary-cyan);
+  box-shadow: inset 0 0 8px rgba(0,217,255,0.1);
+}
+
+.trade-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-md);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.btn-trade {
+  width: 100%;
+  padding: var(--sp-md);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-gaming);
+  font-size: var(--text-sm);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--sp-md);
+}
+
+.btn-trade.buy {
+  background: linear-gradient(135deg, #00f77a, #00d977);
+  color: #000;
+  box-shadow: 0 0 20px rgba(0,247,122,0.3);
+}
+
+.btn-trade.buy:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-green), 0 6px 20px rgba(0,247,122,0.4);
+}
+
+.btn-trade.sell {
+  background: linear-gradient(135deg, #ff3860, #ff1845);
+  color: white;
+  box-shadow: 0 0 20px rgba(255,56,96,0.3);
+}
+
+.btn-trade.sell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-red), 0 6px 20px rgba(255,56,96,0.4);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   HOLDINGS / LISTS
+═════════════════════════════════════════════════════════════ */
+
+.holdings-section, .list-section {
+  flex: 1;
+}
+
+.holdings-title, .list-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--sp-md);
+  padding-bottom: var(--sp-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.holdings-list, .list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.holding-item, .list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-md);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.holding-item:hover, .list-item:hover {
+  border-color: rgba(0,217,255,0.2);
+  background: rgba(0,217,255,0.05);
+}
+
+.holding-name, .list-name {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.holding-qty, .list-sub {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--sp-xs);
+}
+
+.holding-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--primary-cyan);
+}
+
+.holding-pnl {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--primary-green);
+}
+
+.holding-pnl.negative {
+  color: var(--primary-red);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   GAMIFICATION SECTION
+═════════════════════════════════════════════════════════════ */
+
+#gamification-section {
+  grid-column: 1 / -1;
+  padding: var(--sp-lg);
+  background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(0,217,255,0.05));
+  border: 1px solid rgba(0,217,255,0.2);
+  border-radius: var(--radius-xl);
+}
+
+.gamification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-lg);
+}
+
+.gamification-title {
+  font-family: var(--font-gaming);
+  font-size: var(--text-xl);
+  font-weight: 900;
+  color: var(--primary-purple);
+  text-shadow: 0 0 15px rgba(168,85,247,0.3);
+}
+
+.gamification-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.rank-card, .streak-card {
+  background: linear-gradient(135deg, rgba(10,14,26,0.9), rgba(15,24,37,0.85));
+  border: 1px solid var(--border-normal);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  text-align: center;
+}
+
+.rank-card {
+  border-color: rgba(255,200,87,0.3);
+  background: linear-gradient(135deg, rgba(255,200,87,0.08), rgba(15,24,37,0.85));
+}
+
+.streak-card {
+  border-color: rgba(255,107,53,0.3);
+  background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(15,24,37,0.85));
+}
+
+.rank-icon, .streak-icon {
+  font-size: 48px;
+  margin-bottom: var(--sp-sm);
+}
+
+.rank-name, .streak-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-xs);
+}
+
+.rank-title, .streak-count {
+  font-family: var(--font-gaming);
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: var(--sp-sm);
+}
+
+.rank-title {
+  color: var(--rank-gold);
+  text-shadow: 0 0 10px rgba(255,200,87,0.3);
+}
+
+.streak-count {
+  color: var(--streak-hot);
+  text-shadow: 0 0 10px rgba(255,107,53,0.3);
+}
+
+.rank-stats, .streak-stat {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.daily-goal-section {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+  margin-bottom: var(--sp-lg);
+}
+
+.goal-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-xs);
+}
+
+.goal-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--sp-md);
+}
+
+.goal-bar {
+  height: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: var(--sp-md);
+  position: relative;
+}
+
+.goal-progress {
+  height: 100%;
+  width: 80%;
+  background: linear-gradient(90deg, var(--primary-cyan), var(--primary-green));
+  border-radius: inherit;
+  box-shadow: 0 0 15px rgba(0,217,255,0.4), inset 0 0 8px rgba(255,255,255,0.1);
+}
+
+.goal-percent {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--primary-cyan);
+  text-align: right;
+}
+
+.achievements-section {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-lg);
+}
+
+.achievements-title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+  margin-bottom: var(--sp-md);
+  letter-spacing: 0.5px;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--sp-md);
+}
+
+.achievement {
+  background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(0,217,255,0.05));
+  border: 1px solid rgba(0,217,255,0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-md);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.achievement:hover {
+  border-color: rgba(0,217,255,0.4);
+  background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(0,217,255,0.1));
+  transform: translateY(-2px);
+}
+
+.achievement-icon {
+  font-size: 32px;
+  margin-bottom: var(--sp-xs);
+}
+
+.achievement-name {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  margin-bottom: var(--sp-xs);
+}
+
+.achievement-unlocked {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--primary-green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FOOTER
+═════════════════════════════════════════════════════════════ */
+
+#footer {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--sp-lg);
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: var(--sp-lg);
+}
+
+#footer a {
+  color: var(--primary-cyan);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+#footer a:hover {
+  text-shadow: 0 0 10px rgba(0,217,255,0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- WALLET BAR -->
+<div id="wallet-bar">
+  <span class="wl-net" id="network-display">BASE SEPOLIA</span>
+  <span class="wl-addr" id="wallet-address-display">0x0000...0000</span>
+  <button id="btn-connect-wallet" class="btn-wallet">Connect Wallet</button>
+</div>
+
+<!-- MAIN HEADER -->
+<header id="hdr">
+  <div class="logo">⚡ AI<span>BATTLE</span></div>
+  <div class="hdr-score">
+    <div class="battle-status-card">
+      <div class="battle-score">
+        <span class="battle-label">Battle Status</span>
+        <span class="battle-value" id="status-val">NEUTRAL</span>
+      </div>
+      <span class="battle-vs">VS</span>
+      <div class="battle-score">
+        <span class="battle-label">Daily Win Rate</span>
+        <span class="battle-value" id="winrate-val">72%</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN APP -->
+<div id="app">
+  
+  <!-- LEFT SIDEBAR — AI STATS -->
+  <aside id="ai-panel">
+    
+    <div class="ai-header">
+      <div class="ai-status-label">🤖 AI Portfolio</div>
+      <div class="ai-cash">$12,500</div>
+      <div class="ai-pnl positive">+$2,500 (+25%) today</div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">AI Status</div>
+      <div class="list">
+        <div class="list-item">
+          <span class="list-name">Market Regime</span>
+          <span class="list-sub" id="ai-regime">Bullish 📈</span>
+        </div>
+        <div class="list-item">
+          <span class="list-name">Confidence</span>
+          <span class="list-sub" id="ai-confidence">8.5/10</span>
+        </div>
+        <div class="list-item">
+          <span class="list-name">Positions</span>
+          <span class="list-sub" id="ai-positions">3 open</span>
+        </div>
+      </div>
+    </div>
+    
+  </aside>
+
+  <!-- HERO BATTLE SECTION -->
+  <section id="battle-section">
+    <div class="battle-grid">
+      <div class="fighter-panel ai">
+        <div class="fighter-label">🤖 AI Trader</div>
+        <div class="fighter-value" id="ai-portfolio">$12,500</div>
+        <div class="fighter-meta">
+          <span>PnL</span>
+          <strong id="ai-pnl" style="color: var(--primary-green);">+$2,500</strong>
+        </div>
+      </div>
+
+      <div class="vs-badge">VS</div>
+
+      <div class="fighter-panel user">
+        <div class="fighter-label">👤 Your Portfolio</div>
+        <div class="fighter-value" id="user-portfolio">$12,543</div>
+        <div class="fighter-meta">
+          <span>PnL</span>
+          <strong id="user-pnl" style="color: var(--primary-green);">+$1,200</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="battle-progress">
+      <div class="battle-progress-fill"></div>
+    </div>
+  </section>
+
+  <!-- CENTER — CHART -->
+  <main id="chart-section">
+    <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+      <div style="padding: var(--sp-lg); padding-bottom: var(--sp-md); border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-md);">
+          <div>
+            <div class="card-title">Live Market</div>
+            <div class="card-sub">Real-time trading arena</div>
+          </div>
+        </div>
+        <div class="chart-controls">
+          <button class="coin-tab active">BTCUSDT</button>
+          <button class="coin-tab">ETHUSDT</button>
+          <button class="coin-tab">BNBUSDT</button>
+          <button class="coin-tab">SOLUSDT</button>
+          <button class="coin-tab">ANTUSDT</button>
+          <span style="flex: 1;"></span>
+          <button class="tf-btn active">1M</button>
+          <button class="tf-btn">5M</button>
+          <button class="tf-btn">15M</button>
+        </div>
+      </div>
+      <div class="chart-container" style="flex: 1;">
+        <canvas id="chart"></canvas>
+        <div class="chart-info">
+          <div class="chart-coin">BTC/USDT</div>
+          <div class="chart-price" id="chart-price">$98,420</div>
+          <div class="chart-change">+2.45%</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT SIDEBAR — TRADE DESK -->
+  <aside id="user-panel">
+    
+    <div class="user-header">
+      <div class="ai-status-label">👤 Your Portfolio</div>
+      <div class="user-cash">$12,543</div>
+      <div class="user-pnl positive">+$1,200 (+10.6%) today</div>
+    </div>
+    
+    <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+      <div style="padding: var(--sp-lg); padding-bottom: var(--sp-md); border-bottom: 1px solid var(--border-subtle);">
+        <div class="card-title">Trade Desk</div>
+        <div class="card-sub">Execute orders</div>
+      </div>
+      <div style="padding: var(--sp-lg); flex: 1; display: flex; flex-direction: column; overflow-y: auto;">
+        
+        <div class="trading-tabs">
+          <button class="trading-tab buy active">LONG</button>
+          <button class="trading-tab sell">SHORT</button>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Amount (USDT)</label>
+          <input type="number" class="input-field" placeholder="0.00" value="1000"/>
+        </div>
+        
+        <div class="size-buttons">
+          <button class="size-btn">25%</button>
+          <button class="size-btn">50%</button>
+          <button class="size-btn">75%</button>
+          <button class="size-btn active">MAX</button>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Price (Optional)</label>
+          <input type="number" class="input-field" placeholder="Limit order"/>
+        </div>
+        
+        <div class="trade-summary">
+          <span>Est. Quantity</span>
+          <span id="est-qty">0.0101 BTC</span>
+        </div>
+        
+        <button class="btn-trade buy">BUY 0.0101 BTCUSDT</button>
+        
+        <div class="holdings-section" style="margin-top: auto;">
+          <div class="holdings-title">Open Positions</div>
+          <div class="holdings-list">
+            <div class="holding-item">
+              <div>
+                <div class="holding-name">BTCUSDT</div>
+                <div class="holding-qty">0.1234 BTC</div>
+              </div>
+              <div>
+                <div class="holding-value">$1,213</div>
+                <div class="holding-pnl">+2.1%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </aside>
+  
+</div>
+
+<!-- GAMIFICATION SECTION -->
+<section id="gamification-section">
+  <div class="gamification-header">
+    <h2 class="gamification-title">🏆 Achievements & Leaderboard</h2>
+    <a href="#" style="color: var(--primary-cyan); text-decoration: none; font-size: 12px;">View Full Leaderboard →</a>
+  </div>
+  
+  <div class="gamification-grid">
+    <div class="rank-card">
+      <div class="rank-icon">🥇</div>
+      <div class="rank-name">Your Rank</div>
+      <div class="rank-title">GOLD</div>
+      <div class="rank-stats">Top 5% of traders</div>
+    </div>
+    
+    <div class="streak-card">
+      <div class="streak-icon">🔥</div>
+      <div class="streak-label">Win Streak</div>
+      <div class="streak-count">5 Days</div>
+    </div>
+  </div>
+  
+  <div class="daily-goal-section">
+    <div class="goal-label">Daily Goal Progress</div>
+    <div class="goal-title">Achieve 80% Win Rate</div>
+    <div class="goal-bar">
+      <div class="goal-progress"></div>
+    </div>
+    <div class="goal-percent">80% Complete</div>
+  </div>
+  
+  <div class="achievements-section">
+    <div class="achievements-title">Active Badges</div>
+    <div class="achievements-grid">
+      <div class="achievement">
+        <div class="achievement-icon">🎯</div>
+        <div class="achievement-name">Early Trader</div>
+        <div class="achievement-unlocked">UNLOCKED</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">📈</div>
+        <div class="achievement-name">Profit Master</div>
+        <div class="achievement-unlocked">UNLOCKED</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">⚡</div>
+        <div class="achievement-name">Speed Trader</div>
+        <div class="achievement-unlocked">UNLOCKED</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">🎖️</div>
+        <div class="achievement-name">10 Trades</div>
+        <div class="achievement-unlocked">UNLOCKED</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">💎</div>
+        <div class="achievement-name">$1k Gained</div>
+        <div class="achievement-unlocked">UNLOCKED</div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">👑</div>
+        <div class="achievement-name">Battle Champion</div>
+        <div class="achievement-unlocked">LOCKED</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <p>AI Battle Trader © 2024 | Trade Responsibly | Not Financial Advice | <a href="#">Privacy Policy</a></p>
+</footer>
+
+<script>
+// ═════════════════════════════════════════════════════════════
+// CHART RENDERING (Gaming Canvas Chart)
+// ═════════════════════════════════════════════════════════════
+
+function drawChart() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  
+  // Set canvas size
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  
+  // Sample data (50 candles)
+  const prices = [];
+  let price = 98200;
+  for (let i = 0; i < 50; i++) {
+    price += (Math.random() - 0.45) * 20;
+    prices.push(price);
+  }
+  
+  // Draw background
+  ctx.fillStyle = 'rgba(10,14,26,0.5)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Calculate scale
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const range = maxPrice - minPrice || 1;
+  const padding = 40;
+  
+  // Draw grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) {
+    const y = (canvas.height - padding) * i / 10 + padding;
+    ctx.beginPath();
+    ctx.moveTo(40, y);
+    ctx.lineTo(canvas.width - 20, y);
+    ctx.stroke();
+  }
+  
+  // Draw line chart (Cyan gaming color)
+  ctx.strokeStyle = 'rgba(0,217,255,0.9)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  
+  for (let i = 0; i < prices.length; i++) {
+    const x = (canvas.width - 60) * (i / (prices.length - 1)) + 40;
+    const y = canvas.height - padding - ((prices[i] - minPrice) / range) * (canvas.height - padding - 20);
+    
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  
+  ctx.stroke();
+  
+  // Draw gradient fill
+  const gradient = ctx.createLinearGradient(0, canvas.height - padding - 20, 0, canvas.height);
+  gradient.addColorStop(0, 'rgba(0,217,255,0.2)');
+  gradient.addColorStop(1, 'rgba(0,217,255,0.01)');
+  
+  ctx.fillStyle = gradient;
+  ctx.lineTo(canvas.width - 20, canvas.height - 20);
+  ctx.lineTo(40, canvas.height - 20);
+  ctx.fill();
+}
+
+// Draw chart on load and resize
+window.addEventListener('load', drawChart);
+window.addEventListener('resize', drawChart);
+
+// ═════════════════════════════════════════════════════════════
+// INTERACTIVE ELEMENTS (Fixed & Enhanced)
+// ═════════════════════════════════════════════════════════════
+
+// Coin tab switching
+document.querySelectorAll('.coin-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.coin-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    drawChart();
+  });
+});
+
+// Timeframe switching
+document.querySelectorAll('.tf-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    drawChart();
+  });
+});
+
+// Trading tab switching (FIXED JS SYNTAX ERROR)
+document.querySelectorAll('.trading-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.trading-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    // ✅ FIXED: was "const isB buy = ..." now properly "const isBuy = ..."
+    const isBuy = this.classList.contains('buy');
+    const tradeBtn = document.querySelector('.btn-trade');
+    if (isBuy) {
+      tradeBtn.textContent = 'BUY 0.0101 BTCUSDT';
+      tradeBtn.classList.remove('sell');
+      tradeBtn.classList.add('buy');
+    } else {
+      tradeBtn.textContent = 'SELL 0.0101 BTCUSDT';
+      tradeBtn.classList.add('sell');
+      tradeBtn.classList.remove('buy');
+    }
+  });
+});
+
+// Size buttons
+document.querySelectorAll('.size-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ═════════════════════════════════════════════════════════════
+// WEB3 / METAMASK INTEGRATION
+// ═════════════════════════════════════════════════════════════
+
+const walletBtn = document.getElementById('btn-connect-wallet');
+const walletAddrSpan = document.getElementById('wallet-address-display');
+let connectedAccount = null;
+
+// Check if wallet already connected on page load
+async function checkWalletConnection() {
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        connectedAccount = accounts[0];
+        updateWalletUI(connectedAccount);
+      }
+    } catch (error) {
+      console.log('No wallet detected:', error.message);
+    }
+  }
+}
+
+function formatAddress(address) {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function updateWalletUI(address) {
+  connectedAccount = address;
+  walletBtn.classList.add('connected');
+  walletBtn.textContent = 'Disconnect';
+  walletAddrSpan.textContent = formatAddress(address);
+  console.log('✅ Wallet connected:', address);
+}
+
+function disconnectWallet() {
+  connectedAccount = null;
+  walletBtn.classList.remove('connected');
+  walletBtn.textContent = 'Connect Wallet';
+  walletAddrSpan.textContent = 'Not Connected';
+  console.log('❌ Wallet disconnected');
+}
+
+// Main wallet connection button handler
+walletBtn.addEventListener('click', async function() {
+  // If already connected, disconnect
+  if (connectedAccount) {
+    disconnectWallet();
+    return;
+  }
+
+  // Check if MetaMask is installed
+  if (!window.ethereum) {
+    alert('❌ MetaMask not detected! Please install MetaMask extension.');
+    return;
+  }
+
+  try {
+    // Request account access
+    const accounts = await window.ethereum.request({ 
+      method: 'eth_requestAccounts' 
+    });
+
+    if (accounts.length > 0) {
+      const userAddress = accounts[0];
+      
+      // Request signature verification
+      const message = `Sign to verify your wallet for AI Battle Trader\n\nWallet: ${userAddress}\nTimestamp: ${Date.now()}`;
+      
+      try {
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [message, userAddress]
+        });
+        
+        console.log('✅ Signature verified:', signature);
+        updateWalletUI(userAddress);
+        
+        // Show success notification
+        showNotification(`Connected: ${formatAddress(userAddress)}`, 'success');
+      } catch (signError) {
+        console.log('User rejected signature:', signError.message);
+        showNotification('Signature cancelled', 'error');
+      }
+    }
+  } catch (error) {
+    if (error.code === -32002) {
+      alert('⚠️ MetaMask request already pending. Please check MetaMask.');
+    } else if (error.code !== -32603) {
+      console.log('Connection error:', error.message);
+      showNotification('Connection failed', 'error');
+    }
+  }
+});
+
+// Listen for account changes
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', (accounts) => {
+    if (accounts.length === 0) {
+      disconnectWallet();
+    } else if (accounts[0] !== connectedAccount) {
+      updateWalletUI(accounts[0]);
+    }
+  });
+
+  // Listen for network changes
+  window.ethereum.on('chainChanged', (chainId) => {
+    console.log('Network changed to:', chainId);
+  });
+}
+
+// Simple notification system
+function showNotification(message, type = 'info') {
+  const notif = document.createElement('div');
+  notif.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: ${type === 'success' ? 'rgba(0,247,122,0.2)' : 'rgba(255,56,96,0.2)'};
+    border: 1px solid ${type === 'success' ? 'rgba(0,247,122,0.4)' : 'rgba(255,56,96,0.4)'};
+    color: ${type === 'success' ? '#00f77a' : '#ff3860'};
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+  `;
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  
+  setTimeout(() => notif.remove(), 3000);
+}
+
+// Add animation for notifications
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+`;
+document.head.appendChild(style);
+
+// Check wallet on load
+window.addEventListener('load', checkWalletConnection);
+
+console.log('✅ AI Battle Trader — Premium Redesign [FIXED + WEB3 INTEGRATED]');
+</script>
+
+</body>
+</html>
