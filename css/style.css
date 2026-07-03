@@ -872,3 +872,185 @@ body::before {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,216,255,0.35); }
+
+/* ═══════════════════════════════════════════════════════════════
+   WIN/LOSS CELEBRATION SYSTEM — previously JS-only (elements were
+   created and classed correctly at runtime, but no CSS existed for
+   any of it, so celebrations were invisible). Added in full below.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Missing root variables referenced elsewhere in the app */
+:root {
+  --surface:    var(--bg3);
+  --text:       var(--text1);
+  --green-dim:  rgba(0,255,136,0.14);
+  --amber-dim:  rgba(245,166,35,0.14);
+  --red-dim:    rgba(255,51,85,0.14);
+}
+
+/* Signal box regime coloring (bullish = default purple border already set) */
+.ai-signal-box.bearish { border-left-color: var(--red); }
+.ai-signal-box.neutral { border-left-color: var(--amber); }
+.signal-text.bearish   { color: var(--red); }
+.signal-text.neutral   { color: var(--amber); }
+
+/* Trade-log flash-on-new-entry pulse */
+.ai-trade-item.flashing { animation: item-flash 0.4s ease-out; }
+@keyframes item-flash {
+  0%   { background: rgba(0,216,255,0.25); }
+  100% { background: transparent; }
+}
+
+/* Character win/lose animations (idle / idle-flip / attack already existed) */
+.char-svg-wrap.win {
+  animation: char-win 1.6s ease-in-out;
+  filter: drop-shadow(0 0 16px rgba(153,69,255,0.8));
+}
+.char-svg-wrap.win-flip {
+  animation: char-win 1.6s ease-in-out;
+  transform: scaleX(-1);
+  filter: drop-shadow(0 0 16px rgba(0,255,136,0.8));
+}
+.char-svg-wrap.lose {
+  animation: char-lose 1.2s ease-in-out;
+  filter: drop-shadow(0 0 12px rgba(255,51,85,0.7));
+}
+@keyframes char-win {
+  0%, 100% { transform: translateY(0) scale(1); }
+  15%      { transform: translateY(-10px) scale(1.15); }
+  30%      { transform: translateY(0) scale(1); }
+  45%      { transform: translateY(-6px) scale(1.1); }
+  60%      { transform: translateY(0) scale(1); }
+}
+@keyframes char-lose {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  30%  { transform: translateY(6px) rotate(-8deg); opacity: 0.7; }
+  60%  { transform: translateY(3px) rotate(4deg); opacity: 0.85; }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+
+/* Score-card flash when a win/loss lands (JS toggles this class briefly) */
+.score-card.win-celebrate,
+.sc-winloss.win-celebrate {
+  animation: score-flash 0.8s ease-out;
+}
+@keyframes score-flash {
+  0%   { box-shadow: 0 0 0 3px var(--fw-color, var(--cyan)) inset, 0 0 20px var(--fw-color, var(--cyan)); }
+  100% { box-shadow: 0 0 0 0 transparent inset, 0 0 0 transparent; }
+}
+.sc-winloss {
+  font-size: 9px; font-family: var(--font-mono); color: var(--text2);
+  margin-top: 2px; border-radius: 4px; padding: 1px 4px;
+}
+
+/* Battle-result text under VS */
+.battle-result-text {
+  font-size: 10px; font-weight: 700; text-align: center;
+  color: var(--text2); margin-top: 4px; letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+}
+
+/* Floating +$/-$ text spawned near a character on win/loss */
+.char-float {
+  position: absolute;
+  font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+  pointer-events: none; z-index: 500;
+  animation: char-float-up 1s ease-out forwards;
+}
+@keyframes char-float-up {
+  0%   { transform: translateY(0);   opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+/* Small emoji burst spawned in the arena (🌟 etc.) */
+.lightning-effect {
+  position: absolute;
+  font-size: 22px; pointer-events: none; z-index: 500;
+  animation: lightning-pop 0.7s ease-out forwards;
+}
+@keyframes lightning-pop {
+  0%   { transform: scale(0.4) translateY(0);   opacity: 1; }
+  60%  { transform: scale(1.3) translateY(-14px); opacity: 1; }
+  100% { transform: scale(1)   translateY(-26px); opacity: 0; }
+}
+
+/* Firecracker win celebration (rocket launch -> glow -> burst particles) */
+.firecracker-rocket {
+  position: fixed; font-size: 20px; pointer-events: none; z-index: 9998;
+  animation: rocket-launch 0.48s ease-out forwards;
+}
+@keyframes rocket-launch {
+  0%   { transform: translateY(0) scale(1);   opacity: 1; }
+  100% { transform: translateY(-100px) scale(0.8); opacity: 0.9; }
+}
+.firecracker-glow {
+  position: fixed; width: 80px; height: 80px; border-radius: 50%;
+  pointer-events: none; z-index: 9997;
+  animation: glow-pulse 0.6s ease-out forwards;
+}
+@keyframes glow-pulse {
+  0%   { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.firecracker-burst {
+  position: fixed; pointer-events: none; z-index: 9998;
+  animation: burst-fly 0.7s ease-out forwards;
+}
+@keyframes burst-fly {
+  0%   { transform: translate(0,0) scale(1);   opacity: 1; }
+  100% { transform: translate(var(--fx,0), var(--fy,0)) scale(0.5); opacity: 0; }
+}
+
+/* Loss reaction — crying emoji, falling tears, sad cloud, broken heart */
+.cry-emoji {
+  position: fixed; font-size: 26px; pointer-events: none; z-index: 9998;
+  animation: cry-bounce 1.2s ease-out forwards;
+}
+@keyframes cry-bounce {
+  0%   { transform: translateY(0) scale(0.6);   opacity: 0; }
+  20%  { transform: translateY(-6px) scale(1.2); opacity: 1; }
+  40%  { transform: translateY(0) scale(1);     opacity: 1; }
+  100% { transform: translateY(20px) scale(0.8); opacity: 0; }
+}
+.tear-drop {
+  position: fixed; font-size: 14px; pointer-events: none; z-index: 9997;
+  animation: tear-fall 0.9s ease-in forwards;
+}
+@keyframes tear-fall {
+  0%   { transform: translateY(0);   opacity: 1; }
+  100% { transform: translateY(50px); opacity: 0; }
+}
+.sad-cloud {
+  position: fixed; font-size: 20px; pointer-events: none; z-index: 9996;
+  animation: cloud-drift 1.4s ease-in-out forwards;
+}
+@keyframes cloud-drift {
+  0%   { transform: translateX(0) translateY(0);   opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateX(10px) translateY(-8px); opacity: 0; }
+}
+
+/* HP bar low/critical states (base .char-hp-bar already exists) */
+.char-hp-bar.low      { background: linear-gradient(90deg, var(--amber2), var(--amber)); }
+.char-hp-bar.critical {
+  background: linear-gradient(90deg, var(--red2), var(--red));
+  animation: hp-critical-pulse 0.8s ease-in-out infinite;
+}
+@keyframes hp-critical-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* MetaMask connect-modal status line + install link */
+.mm-ext-status {
+  font-size: 11px; color: var(--text2); text-align: center;
+  margin: 6px 0 10px; font-family: var(--font-mono);
+}
+#mm-browser-option { margin-top: 6px; }
+
+/* Wallet-modal lifetime rank badge */
+.wl-lifetime-badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  border: 1px solid var(--border2); border-radius: 6px;
+  padding: 1px 6px; transition: all 0.2s;
+}
