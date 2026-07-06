@@ -4246,3 +4246,98 @@ async function claimStakingReward(){
     showToast('⚠️ Claim failed: '+(e.reason||e.message||e),'error');
   }
 }
+// ============================================
+// MISSING FUNCTIONS - Add at end of app.js
+// ============================================
+
+async function unstakeBattle(){
+  if(!(await _ensureWeb3Ready())) return;
+  const input = document.getElementById('web3-stake-amt');
+  const amt = parseFloat(input && input.value);
+  if(!amt || amt<=0){ 
+    showToast('Enter a valid amount','warning'); 
+    return; 
+  }
+  try{
+    const decimals = await _web3.token.decimals();
+    const amtWei = ethers.parseUnits(String(amt), decimals);
+    showToast('⏳ Unstaking...','info');
+    const tx = await _web3.staking.unstake(amtWei);
+    await tx.wait();
+    showToast(`✅ Unstaked ${amt} BATTLE`,'success');
+    if(input) input.value='';
+    refreshWeb3Hub();
+    updateStakingUI();
+  }catch(e){
+    showToast('⚠️ Unstake failed: '+(e.reason||e.message||e),'error');
+    console.error('Unstake error:', e);
+  }
+}
+
+async function claimStakingReward(){
+  if(!(await _ensureWeb3Ready())) return;
+  try{
+    showToast('⏳ Claiming rewards...','info');
+    const tx = await _web3.staking.claimReward();
+    await tx.wait();
+    showToast('💰 Rewards claimed!','success');
+    refreshWeb3Hub();
+    updateStakingUI();
+  }catch(e){
+    showToast('⚠️ Claim failed: '+(e.reason||e.message||e),'error');
+    console.error('Claim error:', e);
+  }
+}
+
+async function updateStakingUI(){
+  if(!(await _ensureWeb3Ready())) return;
+  try{
+    const addr = await _web3.signer.getAddress();
+    const stakeInfo = await _web3.staking.stakes(addr);
+    const pending = await _web3.staking.pendingReward(addr);
+    const decimals = await _web3.token.decimals();
+    
+    const stakedAmt = ethers.formatUnits(stakeInfo.amount, decimals);
+    const pendingAmt = ethers.formatUnits(pending, decimals);
+    
+    const stakedEl = document.getElementById('web3-staked-amt');
+    const pendingEl = document.getElementById('web3-pending-reward');
+    
+    if(stakedEl) stakedEl.textContent = parseFloat(stakedAmt).toFixed(4);
+    if(pendingEl) pendingEl.textContent = parseFloat(pendingAmt).toFixed(4);
+  }catch(e){
+    console.error('Update staking UI error:', e);
+  }
+}
+
+// Initialize Web3 on page load if wallet connected
+document.addEventListener('DOMContentLoaded', async () => {
+  if(typeof window.ethereum !== 'undefined'){
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if(accounts.length > 0){
+      console.log('Wallet already connected:', accounts[0]);
+      await initWeb3();
+    }
+  }
+});
+
+// Handle account changes
+if(typeof window.ethereum !== 'undefined'){
+  window.ethereum.on('accountsChanged', (accounts) => {
+    if(accounts.length === 0){
+      console.log('Wallet disconnected');
+      _web3 = null;
+    }else{
+      console.log('Account changed:', accounts[0]);
+      initWeb3();
+    }
+  });
+  
+  window.ethereum.on('chainChanged', (chainId) => {
+    console.log('Network changed:', chainId);
+    if(chainId !== '0xaa36a7'){ // Sepolia chain ID
+      showToast('⚠️ Please switch to Sepolia testnet','warning');
+    }
+    window.location.reload();
+  });
+}
