@@ -152,4 +152,4 @@ const TIER_DEFS = [
 // ⚠️ UPDATE THIS after deploying TierUnlock.sol — see DEPLOY_TIER_UNLOCK.md.
 // The old address's contract had no matching function for the unlock calls
 // the app was sending (always reverted on-chain, gas spent for nothing).
-const CONTRACT_ADDRESS = '0x4d76311E921FF2528044F4ff17C38dcd981EBd77'; // ← replace with your new deployed address
+const CONTRACT_ADDRESS = '0x788a8035D7118528eD6E96ed2D09402DC3fC8F9a'; // ← replace with your new deployed address
