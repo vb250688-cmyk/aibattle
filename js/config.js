@@ -15,7 +15,7 @@ const SUPA_TABLE = 'battle_states';
 //   only saves the USER's own trades. Flip this to true only AFTER you've
 //   deployed supabase/functions/ai-tick and set up the cron trigger — see
 //   DEPLOY_24_7.md.
-const SERVER_AI_MODE = false;
+const SERVER_AI_MODE = true;
 
 // ── GAME SETTINGS ─────────────────────────────────────────────
 const GAME_CONFIG = {
