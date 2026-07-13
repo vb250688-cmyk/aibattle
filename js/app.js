@@ -132,6 +132,24 @@ function checkDailyReset(){
     dailyPts = {ai:0, user:0, date:today};
     saveDailyPts();
   }
+  // ── Fund/portfolio daily reset (separate from the points counter above).
+  // Previously only dailyPts (the "TODAY" leaderboard counter) reset daily —
+  // state.userCash/aiCash never did, so the "daily reset" people expected
+  // at 5 AM IST silently never happened for actual balances. ──
+  if(state.dailyDate !== today){
+    state.userCash = 1000; state.userPositions = {}; state.userTradeLog = [];
+    state.userWins = 0; state.userLosses = 0;
+    state.currentLeverage = LEVERAGE_CONFIG.defaultLeverage;
+    state.dailyDate = today;
+    _prevUserPort = 1000; _prevUserWins = 0;
+    saveState();
+    if(walletAddress && SERVER_AI_MODE) supabaseSaveUserOnly().catch(()=>{});
+    // The AI's side resets itself server-side in the Edge Function on its
+    // own tick (works even with no tab open) — pollServerAiState() will
+    // pick that up automatically on its next poll, no client action needed.
+    updateUI();
+    notify('🌅 New day! Portfolio reset (5 AM IST). Points carried over.','reward');
+  }
 }
 
 // ── POINTS FORMULA: % based, hard capped 500 pts per trade ──
@@ -365,6 +383,19 @@ function resetBattle(){
   // ── POINTS ARE NEVER RESET by battle reset ──
   // Daily pts aur lifetime pts dono protected hain.
   // 5 AM IST pe auto-reset hoga daily pts — manually nahi hoga.
+  //
+  // ── AI's server-side state also needs an explicit reset ──
+  // In SERVER_AI_MODE the AI's real balance/positions live in Supabase,
+  // not the browser — resetting only `state.aiCash` here is cosmetic and
+  // gets silently overwritten by the next pollServerAiState() (runs every
+  // ~6s). Call the reset_ai_state RPC so the server row actually resets.
+  if(walletAddress && SERVER_AI_MODE){
+    fetch(`${SUPA_URL}/rest/v1/rpc/reset_ai_state`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY, Prefer:'return=minimal' },
+      body: JSON.stringify({ p_wallet: walletAddress.toLowerCase() })
+    }).catch(e=>console.error('[Supabase] reset_ai_state failed:', e));
+  }
   // Force DOM reset
   ['ai-wins','user-wins'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='0';});
   {const e=document.getElementById('ai-points');if(e)e.textContent='$1,000.00';}
