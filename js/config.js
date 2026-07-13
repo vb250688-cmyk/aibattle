@@ -31,8 +31,8 @@ const GAME_CONFIG = {
 const LEVERAGE_CONFIG = {
   maxLeverage            : 20,
   defaultLeverage        : 10,   // user default
-  aiLeverage             : 5,    // AI starts at 5x (safer)
-  aiMaxLeverage          : 10,   // AI can boost to 10x in strong trends
+  aiLeverage             : 7,    // AI starts at 7x (tuned for more aggressive profit)
+  aiMaxLeverage          : 15,   // AI can boost to 15x in strong trends (was 10)
   liquidationThreshold   : 0.90, // 90% loss = liquidation
   maintenanceMargin      : 0.005, // 0.5% maintenance margin
   fundingRate            : 0.0001, // 0.01% per 8h
