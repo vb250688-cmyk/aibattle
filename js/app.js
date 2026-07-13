@@ -1368,7 +1368,7 @@ function checkAITrade(){
   const winStreak=(state.aiWins||0)-(state.aiLosses||0);
   const streakBoost=Math.min(1.30, Math.max(0.90, 1+(winStreak*0.03))); // floor 0.90 (was 0.85)
 
-  const entryThreshBase=mkt.isChop?13:11;  // RAISED: CHOP=13, trending=11 (don't enter weak)
+  const entryThreshBase=mkt.isChop?11:9;  // Tuned: CHOP=11, trending=9 (more aggressive entries)
   // REVENGE mood mein entryBoost -1 return karta hai — lekin short block pe NO effect
   const entryThresh=Math.max(4, Math.round(entryThreshBase/aggMult) + aiMemory.entryBoost() - _forcedThreshReduction);
 
@@ -1425,8 +1425,8 @@ function checkAITrade(){
     // RR ratio enforced: TP >= 2× SL always
     // ══════════════════════════════════════════════════════════
     const FEE_RT=0.20;  // 0.2% of margin round-trip (fees now margin-based, not notional)
-    const MIN_TP=0.75;  // RAISED: hold for real profit, not noise (0.75% > 0.45%)
-    const MIN_SL=0.50;  // 0.5% SL
+    const MIN_TP=0.50;  // Tuned: tighter TP for scalping, more frequent wins
+    const MIN_SL=0.35;  // Tuned: tighter SL to match
     // Leverage-aware tightening: higher leverage on an OPEN position sits closer to
     // liquidation, so scale its TP/SL window down proportionally. Uses the position's
     // own stored leverage (set at entry time in executeAITrade) — falls back to the
