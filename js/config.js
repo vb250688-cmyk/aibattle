@@ -177,6 +177,11 @@ const TIER_DEFS = [
     desc: 'AI only enters when 1m + 15m + 1h timeframes ALL agree on direction. Filters noise — fewer trades but much higher quality. Win rate over trade count.',
     color: '#ffd700',
   },
+  {
+    id: 7, icon: '📊', name: 'Multi-Touch S/R Zones',
+    desc: 'Draws real support/resistance levels — only counts a level as valid once price has tested it 2+ times, just like a trader marking a chart. Blocks longs right into resistance and shorts right into support to stop buy-the-top / short-the-bottom whipsaws.',
+    color: '#ff6b6b',
+  },
 ];
 
 // Tier-unlock "gas burn" contract (Sepolia testnet).
