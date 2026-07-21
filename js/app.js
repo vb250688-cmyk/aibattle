@@ -575,6 +575,37 @@ function drawChart(){
     ctx.strokeStyle=col;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x,toY(c.h));ctx.lineTo(x,toY(c.l));ctx.stroke();
     ctx.fillStyle=col;const top=toY(Math.max(c.o,c.c)),bot=toY(Math.min(c.o,c.c));ctx.fillRect(x-cw/2,top,cw,Math.max(1,bot-top));
   });
+
+  // ── SUPPORT / RESISTANCE LINES ──────────────────────────────
+  // Same swing-high/low detection the AI's entry logic uses to avoid
+  // buying into a ceiling or shorting into a floor — drawn here so it's
+  // visible, not just a silent backend filter.
+  {
+    const srHighs=[], srLows=[];
+    for(let i=2;i<visible.length-2;i++){
+      const h=visible.map(c=>c.h), l=visible.map(c=>c.l);
+      if(h[i]>h[i-1]&&h[i]>h[i-2]&&h[i]>h[i+1]&&h[i]>h[i+2])srHighs.push(h[i]);
+      if(l[i]<l[i-1]&&l[i]<l[i-2]&&l[i]<l[i+1]&&l[i]<l[i+2])srLows.push(l[i]);
+    }
+    const curP=visible[visible.length-1].c;
+    const resistance=srHighs.filter(h=>h>curP).sort((a,b)=>a-b)[0];
+    const support=srLows.filter(l=>l<curP).sort((a,b)=>b-a)[0];
+    ctx.font='9px monospace';
+    if(resistance){
+      const y=toY(resistance);
+      ctx.strokeStyle='#ff3355aa';ctx.lineWidth=1;ctx.setLineDash([5,3]);
+      ctx.beginPath();ctx.moveTo(50,y);ctx.lineTo(W-5,y);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#ff3355';ctx.textAlign='left';
+      ctx.fillText('R $'+fmtPrice(resistance,coin), 55, y-3);
+    }
+    if(support){
+      const y=toY(support);
+      ctx.strokeStyle='#00ff88aa';ctx.lineWidth=1;ctx.setLineDash([5,3]);
+      ctx.beginPath();ctx.moveTo(50,y);ctx.lineTo(W-5,y);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#00ff88';ctx.textAlign='left';
+      ctx.fillText('S $'+fmtPrice(support,coin), 55, y+11);
+    }
+  }
   ctx.fillStyle='#3a5070';ctx.font='10px monospace';ctx.textAlign='right';
   for(let i=0;i<=4;i++){const p=lo+(i/4)*rng;ctx.fillText('$'+fmtPrice(p,coin),48,toY(p)+3);}
   const cur=visible[visible.length-1].c,first=visible[0].o;
