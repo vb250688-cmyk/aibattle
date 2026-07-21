@@ -988,6 +988,23 @@ function calcAdvancedIndicators(candles, htfCandles=null){
   else if(bear>=8)trend_signal='STRONG_SELL';
   else if(bear>=5)trend_signal='SELL';  // was 6
 
+  // ── Support / Resistance zones ──
+  // Same logic as the Edge Function: find local swing highs/lows over the
+  // window, then flag if price is currently right up against the nearest
+  // one — this is what lets entries avoid buying into a ceiling or
+  // shorting into a floor (the repeated whipsaw pattern seen in the logs).
+  const swingHighs=[], swingLows=[];
+  for(let i=2;i<n-2;i++){
+    if(highs[i]>highs[i-1]&&highs[i]>highs[i-2]&&highs[i]>highs[i+1]&&highs[i]>highs[i+2])swingHighs.push(highs[i]);
+    if(lows[i]<lows[i-1]&&lows[i]<lows[i-2]&&lows[i]<lows[i+1]&&lows[i]<lows[i+2])swingLows.push(lows[i]);
+  }
+  const resistanceAbove=swingHighs.filter(h=>h>price).sort((a,b)=>a-b)[0]||null;
+  const supportBelow=swingLows.filter(l=>l<price).sort((a,b)=>b-a)[0]||null;
+  const distToResistancePct=resistanceAbove?(resistanceAbove-price)/price*100:null;
+  const distToSupportPct=supportBelow?(price-supportBelow)/price*100:null;
+  const nearResistance=distToResistancePct!==null&&distToResistancePct<Math.max(atrPct,0.15);
+  const nearSupport=distToSupportPct!==null&&distToSupportPct<Math.max(atrPct,0.15);
+
   return{
     ema8,ema9,ema13,ema21,ema50,rsi,stochRSI,stochOversold,stochOverbought,
     macdLine,sigLine,macdHist,macdCross,macdExpBull,macdExpBear,
@@ -997,7 +1014,8 @@ function calcAdvancedIndicators(candles, htfCandles=null){
     bullEngulf,bearEngulf,hammer,shootStar,bullMomentum3,bearMomentum3,
     bullDiverg,bearDiverg,highVolume,veryHighVol,
     aboveVwap,belowVwap,breakout,vwap,
-    roc10,momStrong,trend_signal,bull,bear,price
+    roc10,momStrong,trend_signal,bull,bear,price,
+    nearResistance,nearSupport,distToResistancePct,distToSupportPct
   };
 }
 
@@ -1572,7 +1590,7 @@ function checkAITrade(){
           &&(ind.trend_signal==='STRONG_SELL'||ind.trend_signal==='SELL'||shortScore>=shortThresh+4)
           &&ind.htfTrend!==1
           &&ind.rsi>20
-          &&shortAdxOk&&t6ShortOk&&shortMomOk&&shortObOk;
+          &&shortAdxOk&&t6ShortOk&&shortMomOk&&shortObOk&&!ind.nearSupport;
         // canTradeNow declared once at top of loop (shared scope)
         if(shortOk && canTradeNow){
           const confidence=Math.min(shortScore/18,1);
@@ -1648,7 +1666,7 @@ function checkAITrade(){
         const longOk=canLong&&bearLongAllowed&&longScore>=entryThresh
           &&(ind.trend_signal==='STRONG_BUY'||ind.trend_signal==='BUY'||longScore>=entryThresh+5)
           &&longAdxOk&&(ind.htfTrend!==-1||longScore>=entryThresh+5)&&pullbackOk
-          &&ind.rsi>18&&ind.rsi<86&&t6LongOk&&longMomOk&&longObOk;
+          &&ind.rsi>18&&ind.rsi<86&&t6LongOk&&longMomOk&&longObOk&&!ind.nearResistance;
 
         // REVENGE mode = pause
         if(longOk && canTradeNow){
