@@ -576,10 +576,12 @@ function drawChart(){
     ctx.fillStyle=col;const top=toY(Math.max(c.o,c.c)),bot=toY(Math.min(c.o,c.c));ctx.fillRect(x-cw/2,top,cw,Math.max(1,bot-top));
   });
 
-  // ── SUPPORT / RESISTANCE LINES ──────────────────────────────
-  // Same swing-high/low detection the AI's entry logic uses to avoid
-  // buying into a ceiling or shorting into a floor — drawn here so it's
-  // visible, not just a silent backend filter.
+  // ── SUPPORT / RESISTANCE LINES (multi-touch validated) ──────
+  // Only shows levels price has actually tested 2+ times — same
+  // clustering logic the AI's Tier 7 entry gate uses. Drawn here always
+  // (as a preview), but it only actually influences AI entries once
+  // Tier 7 is unlocked — same "informational vs active" pattern as the
+  // other AI Feature tiers.
   {
     const srHighs=[], srLows=[];
     for(let i=2;i<visible.length-2;i++){
@@ -587,23 +589,37 @@ function drawChart(){
       if(h[i]>h[i-1]&&h[i]>h[i-2]&&h[i]>h[i+1]&&h[i]>h[i+2])srHighs.push(h[i]);
       if(l[i]<l[i-1]&&l[i]<l[i-2]&&l[i]<l[i+1]&&l[i]<l[i+2])srLows.push(l[i]);
     }
+    function _clusterSR(points,tolPct){
+      const sorted=[...points].sort((a,b)=>a-b);
+      const clusters=[];let cur=[];
+      for(const p of sorted){
+        if(cur.length===0||Math.abs(p-cur[cur.length-1])/cur[cur.length-1]*100<=tolPct){cur.push(p);}
+        else{if(cur.length>=2)clusters.push({price:cur.reduce((a,b)=>a+b,0)/cur.length,touches:cur.length});cur=[p];}
+      }
+      if(cur.length>=2)clusters.push({price:cur.reduce((a,b)=>a+b,0)/cur.length,touches:cur.length});
+      return clusters;
+    }
     const curP=visible[visible.length-1].c;
-    const resistance=srHighs.filter(h=>h>curP).sort((a,b)=>a-b)[0];
-    const support=srLows.filter(l=>l<curP).sort((a,b)=>b-a)[0];
+    const resZones=_clusterSR(srHighs,0.15).filter(z=>z.price>curP).sort((a,b)=>a.price-b.price).slice(0,2);
+    const supZones=_clusterSR(srLows,0.15).filter(z=>z.price<curP).sort((a,b)=>b.price-a.price).slice(0,2);
     ctx.font='9px monospace';
-    if(resistance){
-      const y=toY(resistance);
+    resZones.forEach(z=>{
+      const y=toY(z.price);
       ctx.strokeStyle='#ff3355aa';ctx.lineWidth=1;ctx.setLineDash([5,3]);
       ctx.beginPath();ctx.moveTo(50,y);ctx.lineTo(W-5,y);ctx.stroke();ctx.setLineDash([]);
       ctx.fillStyle='#ff3355';ctx.textAlign='left';
-      ctx.fillText('R $'+fmtPrice(resistance,coin), 55, y-3);
-    }
-    if(support){
-      const y=toY(support);
+      ctx.fillText(`R $${fmtPrice(z.price,coin)} (${z.touches}x)`, 55, y-3);
+    });
+    supZones.forEach(z=>{
+      const y=toY(z.price);
       ctx.strokeStyle='#00ff88aa';ctx.lineWidth=1;ctx.setLineDash([5,3]);
       ctx.beginPath();ctx.moveTo(50,y);ctx.lineTo(W-5,y);ctx.stroke();ctx.setLineDash([]);
       ctx.fillStyle='#00ff88';ctx.textAlign='left';
-      ctx.fillText('S $'+fmtPrice(support,coin), 55, y+11);
+      ctx.fillText(`S $${fmtPrice(z.price,coin)} (${z.touches}x)`, 55, y+11);
+    });
+    if((resZones.length||supZones.length) && typeof isTierUnlocked==='function' && !isTierUnlocked(7)){
+      ctx.fillStyle='#ffd70099';ctx.font='9px monospace';ctx.textAlign='left';
+      ctx.fillText('🔒 Unlock Tier 7 to make AI respect these levels', 55, 14);
     }
   }
   ctx.fillStyle='#3a5070';ctx.font='10px monospace';ctx.textAlign='right';
@@ -1019,20 +1035,35 @@ function calcAdvancedIndicators(candles, htfCandles=null){
   else if(bear>=8)trend_signal='STRONG_SELL';
   else if(bear>=5)trend_signal='SELL';  // was 6
 
-  // ── Support / Resistance zones ──
-  // Same logic as the Edge Function: find local swing highs/lows over the
-  // window, then flag if price is currently right up against the nearest
-  // one — this is what lets entries avoid buying into a ceiling or
-  // shorting into a floor (the repeated whipsaw pattern seen in the logs).
+  // ── Support / Resistance zones (multi-touch validated) ──
+  // Same logic as the Edge Function: only a swing high/low that price has
+  // tested 2+ times counts as a real level — matching how a trader would
+  // actually mark support/resistance on a chart, not just any single peak.
   const swingHighs=[], swingLows=[];
   for(let i=2;i<n-2;i++){
     if(highs[i]>highs[i-1]&&highs[i]>highs[i-2]&&highs[i]>highs[i+1]&&highs[i]>highs[i+2])swingHighs.push(highs[i]);
     if(lows[i]<lows[i-1]&&lows[i]<lows[i-2]&&lows[i]<lows[i+1]&&lows[i]<lows[i+2])swingLows.push(lows[i]);
   }
-  const resistanceAbove=swingHighs.filter(h=>h>price).sort((a,b)=>a-b)[0]||null;
-  const supportBelow=swingLows.filter(l=>l<price).sort((a,b)=>b-a)[0]||null;
-  const distToResistancePct=resistanceAbove?(resistanceAbove-price)/price*100:null;
-  const distToSupportPct=supportBelow?(price-supportBelow)/price*100:null;
+  function clusterLevels(points,tolerancePct){
+    const sorted=[...points].sort((a,b)=>a-b);
+    const clusters=[];let current=[];
+    for(const p of sorted){
+      if(current.length===0||Math.abs(p-current[current.length-1])/current[current.length-1]*100<=tolerancePct){
+        current.push(p);
+      }else{
+        if(current.length>=2)clusters.push({price:current.reduce((a,b)=>a+b,0)/current.length,touches:current.length});
+        current=[p];
+      }
+    }
+    if(current.length>=2)clusters.push({price:current.reduce((a,b)=>a+b,0)/current.length,touches:current.length});
+    return clusters;
+  }
+  const resistanceZones=clusterLevels(swingHighs,0.15).filter(z=>z.price>price).sort((a,b)=>a.price-b.price);
+  const supportZones=clusterLevels(swingLows,0.15).filter(z=>z.price<price).sort((a,b)=>b.price-a.price);
+  const nearestResistance=resistanceZones[0]||null;
+  const nearestSupport=supportZones[0]||null;
+  const distToResistancePct=nearestResistance?(nearestResistance.price-price)/price*100:null;
+  const distToSupportPct=nearestSupport?(price-nearestSupport.price)/price*100:null;
   const nearResistance=distToResistancePct!==null&&distToResistancePct<Math.max(atrPct,0.15);
   const nearSupport=distToSupportPct!==null&&distToSupportPct<Math.max(atrPct,0.15);
 
@@ -1046,7 +1077,7 @@ function calcAdvancedIndicators(candles, htfCandles=null){
     bullDiverg,bearDiverg,highVolume,veryHighVol,
     aboveVwap,belowVwap,breakout,vwap,
     roc10,momStrong,trend_signal,bull,bear,price,
-    nearResistance,nearSupport,distToResistancePct,distToSupportPct
+    nearResistance,nearSupport,distToResistancePct,distToSupportPct,resistanceZones,supportZones
   };
 }
 
@@ -1617,11 +1648,12 @@ function checkAITrade(){
         // the short (heavy buy-side depth). Missing/stale (>60s) data never blocks.
         const _obS = orderBookImbalance[coin.id];
         const shortObOk = !_obS || (now-_obS.ts>60000) || _obS.ratio<=0.62;
+        const t7ShortOk = !isTierUnlocked(7) || !ind.nearSupport;
         const shortOk = shortScore>=shortThresh
           &&(ind.trend_signal==='STRONG_SELL'||ind.trend_signal==='SELL'||shortScore>=shortThresh+4)
           &&ind.htfTrend!==1
           &&ind.rsi>20
-          &&shortAdxOk&&t6ShortOk&&shortMomOk&&shortObOk&&!ind.nearSupport;
+          &&shortAdxOk&&t6ShortOk&&shortMomOk&&shortObOk&&t7ShortOk;
         // canTradeNow declared once at top of loop (shared scope)
         if(shortOk && canTradeNow){
           const confidence=Math.min(shortScore/18,1);
@@ -1694,10 +1726,11 @@ function checkAITrade(){
         // the long (heavy sell-side depth). Missing/stale (>60s) data never blocks.
         const _obL = orderBookImbalance[coin.id];
         const longObOk = !_obL || (now-_obL.ts>60000) || _obL.ratio>=0.38;
+        const t7LongOk = !isTierUnlocked(7) || !ind.nearResistance;
         const longOk=canLong&&bearLongAllowed&&longScore>=entryThresh
           &&(ind.trend_signal==='STRONG_BUY'||ind.trend_signal==='BUY'||longScore>=entryThresh+5)
           &&longAdxOk&&(ind.htfTrend!==-1||longScore>=entryThresh+5)&&pullbackOk
-          &&ind.rsi>18&&ind.rsi<86&&t6LongOk&&longMomOk&&longObOk&&!ind.nearResistance;
+          &&ind.rsi>18&&ind.rsi<86&&t6LongOk&&longMomOk&&longObOk&&t7LongOk;
 
         // REVENGE mode = pause
         if(longOk && canTradeNow){
