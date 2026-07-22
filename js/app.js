@@ -532,7 +532,7 @@ initWs();
 
 async function loadAllCandles(){
   for(const coin of COINS){
-    const data=await fetchKlines(coin.symbol,state.tf,80);
+    const data=await fetchKlines(coin.symbol,state.tf,300);
     if(data){
       candleData[`${coin.id}_${state.tf}`]=data;
       if(!livePrices[coin.id])livePrices[coin.id]=data[data.length-1].c;
@@ -590,7 +590,7 @@ canvas.addEventListener('mousedown', e=>{
 window.addEventListener('mousemove', e=>{
   if(!_chartDragging)return;
   const rect=canvas.getBoundingClientRect();
-  const candleW=(rect.width-60)/chartCandleCount;
+  const candleW=(rect.width-55)/chartCandleCount;
   const dx=e.clientX-_chartDragStartX;
   const candleShift=Math.round(-dx/candleW);
   const key=`${state.selectedCoin}_${state.tf}`;
@@ -622,7 +622,7 @@ canvas.addEventListener('touchstart', e=>{
 canvas.addEventListener('touchmove', e=>{
   if(e.touches.length!==1)return;
   const rect=canvas.getBoundingClientRect();
-  const candleW=(rect.width-60)/chartCandleCount;
+  const candleW=(rect.width-55)/chartCandleCount;
   const dx=e.touches[0].clientX-_chartTouchStartX;
   const candleShift=Math.round(-dx/candleW);
   const key=`${state.selectedCoin}_${state.tf}`;
@@ -725,10 +725,10 @@ function drawChart(){
   // points that are SLOPING (a descending line through lower swing highs
   // = resistance trendline; an ascending line through higher swing lows
   // = support trendline) — the diagonal lines from the reference chart.
-  // The "bias" label is a heuristic read of the current structure
-  // (which line price is closer to / whether it broke one), not a
-  // guarantee — no indicator can reliably predict market direction, and
-  // this doesn't claim to.
+  // The "bias" badge is a heuristic read of the current structure (which
+  // line price is closer to / whether it broke one), not a guarantee —
+  // no indicator can reliably predict market direction, and this
+  // doesn't claim to.
   {
     const idxHighs=[], idxLows=[];
     for(let i=2;i<visible.length-2;i++){
@@ -736,8 +736,6 @@ function drawChart(){
       if(h[i]>h[i-1]&&h[i]>h[i-2]&&h[i]>h[i+1]&&h[i]>h[i+2])idxHighs.push({i,price:h[i]});
       if(l[i]<l[i-1]&&l[i]<l[i-2]&&l[i]<l[i+1]&&l[i]<l[i+2])idxLows.push({i,price:l[i]});
     }
-    // Resistance trendline: last 2 swing highs, only if they're actually
-    // sloping down (a flat/rising pair isn't a descending resistance line)
     let resLine=null;
     if(idxHighs.length>=2){
       const [a,b]=idxHighs.slice(-2);
@@ -746,7 +744,6 @@ function drawChart(){
         resLine={a,b,slope,valueAt:(idx)=>b.price+slope*(idx-b.i)};
       }
     }
-    // Support trendline: last 2 swing lows, only if sloping up
     let supLine=null;
     if(idxLows.length>=2){
       const [a,b]=idxLows.slice(-2);
@@ -756,35 +753,45 @@ function drawChart(){
       }
     }
     const lastIdx=visible.length-1;
+    // Clip drawing to the plot area so a steep line never bleeds over the
+    // price axis or the top/bottom edge — it just stops at the border
+    // instead of looking cut off mid-line.
+    ctx.save();
+    ctx.beginPath(); ctx.rect(50,8,W-58,H-38); ctx.clip();
     if(resLine){
       const y1=toY(resLine.valueAt(resLine.a.i)), y2=toY(resLine.valueAt(lastIdx));
       ctx.strokeStyle='#ff8800cc';ctx.lineWidth=1.3;ctx.setLineDash([]);
       ctx.beginPath();ctx.moveTo(toX(resLine.a.i),y1);ctx.lineTo(toX(lastIdx),y2);ctx.stroke();
       ctx.fillStyle='#ff8800';ctx.font='9px monospace';ctx.textAlign='right';
-      ctx.fillText('Resistance trend', toX(lastIdx)-4, y2-4);
+      ctx.fillText('Resistance trend', toX(lastIdx)-4, Math.max(20,Math.min(H-35,y2-4)));
     }
     if(supLine){
       const y1=toY(supLine.valueAt(supLine.a.i)), y2=toY(supLine.valueAt(lastIdx));
       ctx.strokeStyle='#00ccffcc';ctx.lineWidth=1.3;ctx.setLineDash([]);
       ctx.beginPath();ctx.moveTo(toX(supLine.a.i),y1);ctx.lineTo(toX(lastIdx),y2);ctx.stroke();
       ctx.fillStyle='#00ccff';ctx.font='9px monospace';ctx.textAlign='right';
-      ctx.fillText('Support trend', toX(lastIdx)-4, y2+12);
+      ctx.fillText('Support trend', toX(lastIdx)-4, Math.max(20,Math.min(H-35,y2+12)));
     }
-    // Directional bias — a plain-language read of the structure, framed
-    // honestly as a heuristic/read, never as a guaranteed forecast.
+    ctx.restore();
+    // Directional bias — ALWAYS shows one clear state (never blank), as
+    // a colored badge so it can't be missed. Framed as a heuristic read,
+    // not a forecast: "bias" language + explicit "(not a guarantee)".
     const curPrice=visible[lastIdx].c;
-    let biasText=null, biasColor='#8899aa';
+    let biasText, biasBg, biasFg;
     if(resLine && curPrice > resLine.valueAt(lastIdx)){
-      biasText='⬆ Broke above resistance trend — bias: bullish (not a guarantee)';biasColor='#00ff88';
+      biasText='⬆ BULLISH bias — broke above resistance trend (not a guarantee)'; biasBg='#00ff8822'; biasFg='#00ff88';
     } else if(supLine && curPrice < supLine.valueAt(lastIdx)){
-      biasText='⬇ Broke below support trend — bias: bearish (not a guarantee)';biasColor='#ff3355';
+      biasText='⬇ BEARISH bias — broke below support trend (not a guarantee)'; biasBg='#ff335522'; biasFg='#ff3355';
     } else if(resLine && supLine){
-      biasText='↔ Between trendlines — watching for breakout either way';biasColor='#ffd700';
+      biasText='↔ NEUTRAL — price between trendlines, watching for breakout'; biasBg='#ffd70022'; biasFg='#ffd700';
+    } else {
+      biasText='— No clear trendline pattern in this window yet'; biasBg='#8899aa22'; biasFg='#8899aa';
     }
-    if(biasText){
-      ctx.fillStyle=biasColor;ctx.font='10px monospace';ctx.textAlign='left';
-      ctx.fillText(biasText, 55, H-8);
-    }
+    ctx.font='10px monospace';
+    const textW=ctx.measureText(biasText).width;
+    ctx.fillStyle=biasBg; ctx.fillRect(50,H-24,textW+16,18);
+    ctx.fillStyle=biasFg; ctx.textAlign='left';
+    ctx.fillText(biasText, 58, H-11);
   }
   ctx.fillStyle='#3a5070';ctx.font='10px monospace';ctx.textAlign='right';
   for(let i=0;i<=4;i++){const p=lo+(i/4)*rng;ctx.fillText('$'+fmtPrice(p,coin),48,toY(p)+3);}
@@ -3122,7 +3129,7 @@ function checkLiquidations(){
     for(const coin of COINS){
       try{
         const key=`${coin.id}_${state.tf}`;
-        const data=await fetchKlines(coin.symbol,state.tf,80);
+        const data=await fetchKlines(coin.symbol,state.tf,300);
         if(data)candleData[key]=data;
         await new Promise(r=>setTimeout(r,400)); // stagger to avoid rate limit
       }catch(e){}
