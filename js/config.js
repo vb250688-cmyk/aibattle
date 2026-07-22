@@ -174,7 +174,7 @@ const TIER_DEFS = [
   },
   {
     id: 6, icon: '🔭', name: 'Multi-TF Confirmation',
-    desc: 'AI only enters when 1m + 15m + 1h timeframes ALL agree on direction. Filters noise — fewer trades but much higher quality. Win rate over trade count.',
+    desc: 'Blocks entries that go against the 200 EMA trend on 5m AND 15m — only trades aligned with the bigger picture. Also requires volume + VWAP + order-flow (CVD) confirmation on the entry candle itself, not just price alone.',
     color: '#ffd700',
   },
   {
@@ -188,4 +188,4 @@ const TIER_DEFS = [
 // ⚠️ UPDATE THIS after deploying TierUnlock.sol — see DEPLOY_TIER_UNLOCK.md.
 // The old address's contract had no matching function for the unlock calls
 // the app was sending (always reverted on-chain, gas spent for nothing).
-const CONTRACT_ADDRESS = '0x698568ffef87630c10Eb1680BEBaF2bB4D9084Cc'; // ← replace with your new deployed address
+const CONTRACT_ADDRESS = '0x788a8035D7118528eD6E96ed2D09402DC3fC8F9a'; // ← replace with your new deployed address
