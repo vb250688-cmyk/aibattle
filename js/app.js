@@ -549,6 +549,91 @@ async function refreshAll(){
 // ---- CHART ----
 const canvas=document.getElementById('chart');
 const ctx=canvas.getContext('2d');
+
+// ── Chart zoom/pan state ──
+// candleCount = how many candles are visible at once (zoom level)
+// panOffset   = how many candles back from the most recent to start the
+//               visible window (0 = showing the live/most-recent edge)
+let chartCandleCount=60, chartPanOffset=0;
+const CHART_MIN_CANDLES=20, CHART_MAX_CANDLES=200;
+
+function chartZoom(factor, anchorRatio=0.5){
+  const key=`${state.selectedCoin}_${state.tf}`;
+  const total=(candleData[key]||[]).length;
+  const oldCount=chartCandleCount;
+  chartCandleCount=Math.max(CHART_MIN_CANDLES, Math.min(CHART_MAX_CANDLES, Math.round(chartCandleCount*factor)));
+  // Keep the candle under the cursor roughly stationary while zooming
+  const delta=chartCandleCount-oldCount;
+  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), Math.round(chartPanOffset-delta*anchorRatio)));
+  drawChart();
+}
+function chartPan(candles){
+  const key=`${state.selectedCoin}_${state.tf}`;
+  const total=(candleData[key]||[]).length;
+  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), chartPanOffset+candles));
+  drawChart();
+}
+function chartResetToLive(){ chartPanOffset=0; chartCandleCount=60; drawChart(); }
+
+canvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const anchorRatio=(e.clientX-rect.left)/rect.width;
+  chartZoom(e.deltaY>0?1.15:0.87, anchorRatio);
+}, {passive:false});
+
+let _chartDragging=false, _chartDragStartX=0, _chartDragStartOffset=0;
+canvas.addEventListener('mousedown', e=>{
+  _chartDragging=true; _chartDragStartX=e.clientX; _chartDragStartOffset=chartPanOffset;
+  canvas.style.cursor='grabbing';
+});
+window.addEventListener('mousemove', e=>{
+  if(!_chartDragging)return;
+  const rect=canvas.getBoundingClientRect();
+  const candleW=(rect.width-60)/chartCandleCount;
+  const dx=e.clientX-_chartDragStartX;
+  const candleShift=Math.round(-dx/candleW);
+  const key=`${state.selectedCoin}_${state.tf}`;
+  const total=(candleData[key]||[]).length;
+  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), _chartDragStartOffset+candleShift));
+  drawChart();
+});
+window.addEventListener('mouseup', ()=>{ if(_chartDragging){_chartDragging=false;canvas.style.cursor='grab';} });
+canvas.style.cursor='grab';
+let _chartDragMoved=false;
+canvas.addEventListener('mousedown', ()=>{ _chartDragMoved=false; });
+window.addEventListener('mousemove', e=>{ if(_chartDragging) _chartDragMoved=true; });
+canvas.addEventListener('click', e=>{
+  if(_chartDragMoved)return; // was a drag, not a click
+  const rect=canvas.getBoundingClientRect();
+  const x=e.clientX-rect.left, y=e.clientY-rect.top;
+  // "Jump to live" hint is drawn top-right around (W-8,24), give it a
+  // generous clickable hitbox
+  if(chartPanOffset>0 && x>rect.width-220 && x<rect.width && y>14 && y<30){
+    chartResetToLive();
+  }
+});
+// Touch support (mobile pan)
+let _chartTouchStartX=0, _chartTouchStartOffset=0;
+canvas.addEventListener('touchstart', e=>{
+  if(e.touches.length!==1)return;
+  _chartTouchStartX=e.touches[0].clientX; _chartTouchStartOffset=chartPanOffset;
+}, {passive:true});
+canvas.addEventListener('touchmove', e=>{
+  if(e.touches.length!==1)return;
+  const rect=canvas.getBoundingClientRect();
+  const candleW=(rect.width-60)/chartCandleCount;
+  const dx=e.touches[0].clientX-_chartTouchStartX;
+  const candleShift=Math.round(-dx/candleW);
+  const key=`${state.selectedCoin}_${state.tf}`;
+  const total=(candleData[key]||[]).length;
+  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), _chartTouchStartOffset+candleShift));
+  drawChart();
+}, {passive:true});
+// Reset zoom/pan whenever the coin or timeframe changes, so switching
+// coins always starts back at the live edge instead of a stale window
+// (handled directly in selectCoin/setTf below).
+
 function drawChart(){
   const W=canvas.offsetWidth||560,H=280;
   canvas.width=W;canvas.height=H;
@@ -557,7 +642,19 @@ function drawChart(){
   const coin=COINS.find(c=>c.id===state.selectedCoin);
   ctx.fillStyle='#0a1018';ctx.fillRect(0,0,W,H);
   if(!data.length){ctx.fillStyle='#607080';ctx.font='13px Share Tech Mono';ctx.textAlign='center';ctx.fillText('Loading...',W/2,H/2);return;}
-  const visible=data.slice(-60);
+  chartCandleCount=Math.max(CHART_MIN_CANDLES, Math.min(CHART_MAX_CANDLES, chartCandleCount, data.length));
+  const maxOffset=Math.max(0, data.length-chartCandleCount);
+  chartPanOffset=Math.max(0, Math.min(maxOffset, chartPanOffset));
+  const endIdx=data.length-chartPanOffset;
+  const visible=data.slice(Math.max(0,endIdx-chartCandleCount), endIdx);
+  // "Zoom/scroll" hint + live indicator + reset button (drawn top-right)
+  ctx.font='9px monospace';ctx.textAlign='right';
+  if(chartPanOffset>0){
+    ctx.fillStyle='#ffd700';ctx.fillText('⏪ viewing history — scroll/drag to browse', W-8, 12);
+    ctx.fillStyle='#4ab8ff';ctx.fillText('[Click here to jump to live ▶]', W-8, 24);
+  } else {
+    ctx.fillStyle='#00ff8899';ctx.fillText('● LIVE — scroll to zoom, drag to pan', W-8, 12);
+  }
   ctx.strokeStyle='rgba(26,37,53,0.5)';ctx.lineWidth=0.5;
   for(let i=0;i<=4;i++){const y=(i/4)*(H-30)+10;ctx.beginPath();ctx.moveTo(50,y);ctx.lineTo(W-5,y);ctx.stroke();}
   const hi=Math.max(...visible.map(c=>c.h)),lo=Math.min(...visible.map(c=>c.l));
@@ -2490,11 +2587,13 @@ function updateUI(){
 // ---- HELPERS ----
 function selectCoin(id){
   state.selectedCoin=id;
+  chartPanOffset=0; chartCandleCount=60;
   if(!candleData[`${id}_${state.tf}`])loadAllCandles().then(updateUI);
   else updateUI();
 }
 function setTf(tf){
   state.tf=tf;
+  chartPanOffset=0; chartCandleCount=60;
   document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.textContent===tf.toUpperCase()));
   loadAllCandles().then(updateUI);
 }
