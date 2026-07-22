@@ -564,13 +564,13 @@ function chartZoom(factor, anchorRatio=0.5){
   chartCandleCount=Math.max(CHART_MIN_CANDLES, Math.min(CHART_MAX_CANDLES, Math.round(chartCandleCount*factor)));
   // Keep the candle under the cursor roughly stationary while zooming
   const delta=chartCandleCount-oldCount;
-  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), Math.round(chartPanOffset-delta*anchorRatio)));
+  chartPanOffset=Math.max(-Math.floor(chartCandleCount*0.4), Math.min(Math.max(0,total-chartCandleCount), Math.round(chartPanOffset-delta*anchorRatio)));
   drawChart();
 }
 function chartPan(candles){
   const key=`${state.selectedCoin}_${state.tf}`;
   const total=(candleData[key]||[]).length;
-  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), chartPanOffset+candles));
+  chartPanOffset=Math.max(-Math.floor(chartCandleCount*0.4), Math.min(Math.max(0,total-chartCandleCount), chartPanOffset+candles));
   drawChart();
 }
 function chartResetToLive(){ chartPanOffset=0; chartCandleCount=60; drawChart(); }
@@ -595,7 +595,7 @@ window.addEventListener('mousemove', e=>{
   const candleShift=Math.round(-dx/candleW);
   const key=`${state.selectedCoin}_${state.tf}`;
   const total=(candleData[key]||[]).length;
-  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), _chartDragStartOffset+candleShift));
+  chartPanOffset=Math.max(-Math.floor(chartCandleCount*0.4), Math.min(Math.max(0,total-chartCandleCount), _chartDragStartOffset+candleShift));
   drawChart();
 });
 window.addEventListener('mouseup', ()=>{ if(_chartDragging){_chartDragging=false;canvas.style.cursor='grab';} });
@@ -627,7 +627,7 @@ canvas.addEventListener('touchmove', e=>{
   const candleShift=Math.round(-dx/candleW);
   const key=`${state.selectedCoin}_${state.tf}`;
   const total=(candleData[key]||[]).length;
-  chartPanOffset=Math.max(0, Math.min(Math.max(0,total-chartCandleCount), _chartTouchStartOffset+candleShift));
+  chartPanOffset=Math.max(-Math.floor(chartCandleCount*0.4), Math.min(Math.max(0,total-chartCandleCount), _chartTouchStartOffset+candleShift));
   drawChart();
 }, {passive:true});
 // Reset zoom/pan whenever the coin or timeframe changes, so switching
@@ -643,15 +643,21 @@ function drawChart(){
   ctx.fillStyle='#0a1018';ctx.fillRect(0,0,W,H);
   if(!data.length){ctx.fillStyle='#607080';ctx.font='13px Share Tech Mono';ctx.textAlign='center';ctx.fillText('Loading...',W/2,H/2);return;}
   chartCandleCount=Math.max(CHART_MIN_CANDLES, Math.min(CHART_MAX_CANDLES, chartCandleCount, data.length));
-  const maxOffset=Math.max(0, data.length-chartCandleCount);
-  chartPanOffset=Math.max(0, Math.min(maxOffset, chartPanOffset));
-  const endIdx=data.length-chartPanOffset;
+  const maxHistoryOffset=Math.max(0, data.length-chartCandleCount);
+  const maxFutureSlots=Math.floor(chartCandleCount*0.4); // how far the live candle can be pulled from the right edge
+  chartPanOffset=Math.max(-maxFutureSlots, Math.min(maxHistoryOffset, chartPanOffset));
+  const historyOffset=Math.max(0,chartPanOffset);   // >0: viewing older history, pinned to edge
+  const futureSlots=Math.max(0,-chartPanOffset);    // >0: live candle pulled away from edge, blank space after it
+  const endIdx=data.length-historyOffset;
   const visible=data.slice(Math.max(0,endIdx-chartCandleCount), endIdx);
+  const windowSize=visible.length+futureSlots; // toX denominator — includes blank future slots so pulling works
   // "Zoom/scroll" hint + live indicator + reset button (drawn top-right)
   ctx.font='9px monospace';ctx.textAlign='right';
   if(chartPanOffset>0){
     ctx.fillStyle='#ffd700';ctx.fillText('⏪ viewing history — scroll/drag to browse', W-8, 12);
     ctx.fillStyle='#4ab8ff';ctx.fillText('[Click here to jump to live ▶]', W-8, 24);
+  } else if(chartPanOffset<0){
+    ctx.fillStyle='#4ab8ff';ctx.fillText('● LIVE (pulled from edge) — drag right to reset', W-8, 12);
   } else {
     ctx.fillStyle='#00ff8899';ctx.fillText('● LIVE — scroll to zoom, drag to pan', W-8, 12);
   }
@@ -660,7 +666,7 @@ function drawChart(){
   const hi=Math.max(...visible.map(c=>c.h)),lo=Math.min(...visible.map(c=>c.l));
   const rng=hi-lo||lo*0.01||1,pad=12,chartH=H-pad*2-15,chartW=W-55;
   const toY=p=>pad+chartH-((p-lo)/rng)*chartH;
-  const toX=i=>52+(i/(Math.max(visible.length-1,1)))*chartW;
+  const toX=i=>52+(i/(Math.max(windowSize-1,1)))*chartW;
   ctx.beginPath();ctx.moveTo(toX(0),toY(visible[0].c));
   visible.forEach((c,i)=>ctx.lineTo(toX(i),toY(c.c)));
   ctx.lineTo(toX(visible.length-1),H-15);ctx.lineTo(toX(0),H-15);ctx.closePath();
